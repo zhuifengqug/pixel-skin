@@ -1,7 +1,7 @@
 {
   "name": "dsh-pixel-skin",
-  "version": "0.1.0",
-  "description": "红白机（Famicom）像素风皮肤 for DeepSeek Harness Web：米白机壳 + 卡带红 + 炭黑，直角硬阴影像素质感。",
+  "version": "0.1.1",
+  "description": "红白机（Famicom）像素风皮肤 for DeepSeek Harness Web：四色可切换强调色、像素字体、HP 条式状态与 GBA 式窗框。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -26,7 +26,10 @@
     "theme",
     "pixel",
     "famicom",
-    "skin"
+    "skin",
+    "palette",
+    "8-bit",
+    "arcade"
   ],
   "author": "dsh user",
   "license": "MIT",

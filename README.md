@@ -18,6 +18,12 @@ A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfa
 - 直角、硬阴影、像素按下位移、方形滚动条、棋盘网格底
 - 可选 CRT 扫描线（默认关）
 - 与官方 Appearance（浅/深/跟随系统）兼容；与其他主题插件共存时**后加载层胜**（本插件默认最后加载 → 优先）
+- **四套可切换强调色**：红 / 蓝 / 绿 / 黄，在 Settings → General → 像素主题色卡片一键切换，localStorage 持久化
+- **HP 条式状态**：上下文分解条改为方形血量段（系统绿 / 工具蓝 / 消息随主题色），运行中的工具卡片显示「战斗中」斜纹扫动
+- **GBA 式对话窗**：弹窗 / 菜单 / 面板使用双层像素描边，选中项黄色高亮
+- **像素球加载动画**：圆形 spinner 替换为原创 8-bit 红白像素球（弹跳阶跃动画）
+
+> 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
 ## Screenshots
 
@@ -78,9 +84,11 @@ dsh plugin --profile web add D:/dsh/pixel-skin
 浏览器控制台：
 
 ```js
-__PIXELSKIN__.scanlines(true)   // 开启扫描线（false 关闭）
-__PIXELSKIN__.off()             // 停用皮肤（刷新后恢复官方外观）
-__PIXELSKIN__.on()              // 重新启用
+__PIXELSKIN__.palette('red')      // 切换主题色：red / blue / green / yellow
+__PIXELSKIN__.palettes()          // ['red','blue','green','yellow']
+__PIXELSKIN__.scanlines(true)     // 开启扫描线（false 关闭）
+__PIXELSKIN__.off()               // 停用皮肤（刷新后恢复官方外观）
+__PIXELSKIN__.on()                // 重新启用
 ```
 
 localStorage：
