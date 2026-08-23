@@ -19,6 +19,7 @@
 - **HP 条式状态**：上下文分解条改为方形血量段（系统绿 / 工具蓝 / 消息随主题色），运行中的工具卡片显示「战斗中」斜纹扫动
 - **GBA 式对话窗**：弹窗 / 菜单 / 面板使用双层像素描边，选中项黄色高亮
 - **像素球加载动画**：圆形 spinner 替换为原创 8-bit 红白像素球（弹跳阶跃动画）
+- **回合状态句**：思考中的「Deep diving...」可替换为 战斗中… / 正在出招… / 正在蓄力…（设置卡片或控制台切换）
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -96,6 +97,8 @@ dsh plugin --profile web add ./dsh-pixel-skin-0.1.0.tgz
 ```js
 __PIXELSKIN__.palette('red') // 切换主题色：red / blue / green / yellow
 __PIXELSKIN__.palettes() // ['red','blue','green','yellow']
+__PIXELSKIN__.status('battle') // 状态句：battle / move / charge
+__PIXELSKIN__.statuses() // ['battle','move','charge']
 __PIXELSKIN__.scanlines(true) // 开启扫描线
 __PIXELSKIN__.scanlines(false) // 关闭扫描线
 __PIXELSKIN__.off() // 停用皮肤，刷新后恢复官方外观
