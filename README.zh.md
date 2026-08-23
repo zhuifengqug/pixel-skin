@@ -18,9 +18,9 @@
 
 ## 安装
 
-### npm 安装（发布后）
+### npm 安装
 
-包发布到 npm 后，执行：
+包已发布到 npm，执行：
 
 ```sh
 npm install dsh-pixel-skin
@@ -35,7 +35,11 @@ pnpm add dsh-pixel-skin
 dsh plugin --profile web add dsh-pixel-skin
 ```
 
-当前 npm registry 尚未发布 `dsh-pixel-skin`；发布后即可使用以上命令。
+查看当前 npm 版本：
+
+```sh
+npm view dsh-pixel-skin version
+```
 
 ### GitHub 安装（当前可用）
 

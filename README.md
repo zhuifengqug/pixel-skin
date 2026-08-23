@@ -21,9 +21,9 @@ A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfa
 
 ## 安装
 
-### npm 安装（发布后）
+### npm 安装
 
-发布到 npm 后，使用：
+已发布到 npm，使用：
 
 ```sh
 npm install dsh-pixel-skin
@@ -38,7 +38,11 @@ pnpm add dsh-pixel-skin
 dsh plugin --profile web add dsh-pixel-skin
 ```
 
-当前 npm registry 尚未发布此包；发布后无需修改上述命令。
+查看当前 npm 版本：
+
+```sh
+npm view dsh-pixel-skin version
+```
 
 ### GitHub 安装（当前可用）
 
