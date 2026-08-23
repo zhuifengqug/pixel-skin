@@ -19,6 +19,16 @@ A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfa
 - 可选 CRT 扫描线（默认关）
 - 与官方 Appearance（浅/深/跟随系统）兼容；与其他主题插件共存时**后加载层胜**（本插件默认最后加载 → 优先）
 
+## Screenshots
+
+### DSH Web home
+
+![dsh-pixel-skin home](assets/screenshots/home.png)
+
+### Settings
+
+![dsh-pixel-skin settings](assets/screenshots/settings.png)
+
 ## 安装
 
 ### DSH Web 安装（推荐）

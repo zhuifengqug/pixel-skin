@@ -16,6 +16,16 @@
 - 与官方浅色、深色、跟随系统模式兼容
 - 与其他主题插件共存时，本插件作为最后加载层优先覆盖冲突 token
 
+## 截图
+
+### DSH Web 主页
+
+![dsh-pixel-skin 主页](assets/screenshots/home.png)
+
+### 设置页面
+
+![dsh-pixel-skin 设置页](assets/screenshots/settings.png)
+
 ## 安装
 
 ### DSH Web 安装（推荐）
