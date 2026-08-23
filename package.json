@@ -1,0 +1,47 @@
+{
+  "name": "dsh-pixel-skin",
+  "version": "0.1.0",
+  "description": "红白机（Famicom）像素风皮肤 for DeepSeek Harness Web：米白机壳 + 卡带红 + 炭黑，直角硬阴影像素质感。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "assets",
+    "cordis.patch.yml",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "echo 'pre-built plain JS bundle — no build step required'"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "theme",
+    "pixel",
+    "famicom",
+    "skin"
+  ],
+  "author": "dsh user",
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-theme"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh": "*"
+  }
+}
