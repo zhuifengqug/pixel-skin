@@ -15,11 +15,16 @@
 - 可选 CRT 扫描线，默认关闭
 - 与官方浅色、深色、跟随系统模式兼容
 - 与其他主题插件共存时，本插件作为最后加载层优先覆盖冲突 token
-- **四套可切换强调色**：红 / 蓝 / 绿 / 黄，在「设置 → 通用 → 像素主题色」卡片一键切换，localStorage 持久化
+- **四套可切换强调色**：红 / 蓝 / 绿 / 黄，在「设置 → 像素皮肤」分区一键切换，localStorage 持久化
 - **HP 条式状态**：上下文分解条改为方形血量段（系统绿 / 工具蓝 / 消息随主题色），运行中的工具卡片显示「战斗中」斜纹扫动
 - **GBA 式对话窗**：弹窗 / 菜单 / 面板使用双层像素描边，选中项黄色高亮
 - **像素球加载动画**：圆形 spinner 替换为原创 8-bit 红白像素球（弹跳阶跃动画）
-- **回合状态句**：思考中的「Deep diving...」可替换为 正在进化…（默认）/ 战斗中… / 正在出招… / 正在蓄力…（设置卡片或控制台切换）
+- **回合状态句**：思考中的「Deep diving...」可独立替换为 待机… / 正在蓄力… / 正在出招… / 正在进化…（「像素皮肤」设置分区或控制台切换）
+- **滑块配色可选**：能力等级滑块支持蓝系 / 绿系 / 红橙三套由浅到深的单色渐变，也可用自定义取色器生成专属色带
+- **能力等级面板**：点击模型菜单中的「推理等级」打开 GBA 双描边窗框；使用 Fusion Pixel 字体、EXP 经验条、HP 段格子和像素箭头。
+- **推理等级拖动**：支持 0–100 拖动、16ms 节流写入 effort，松手或失焦时吸附到最近的模型档位。
+- **能力色谱**：单色系由浅到深渐深，最深档仍保持可见颜色；当前格显示白色顶边。
+- **自动补全图鉴**：无推理档位的模型会出现「补全图鉴」入口，调用 `/pixel-declare` 按 models.dev 和模型家族规则补全配置。
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -75,7 +80,7 @@ dsh plugin --profile web add github:zhuifengqug/pixel-skin
 dsh plugin --profile web add D:/dsh/pixel-skin
 ```
 
-安装后重启 `dsh web`，然后在浏览器中执行硬刷新（Ctrl+F5）。
+安装后重启 `dsh web`，然后在浏览器中执行硬刷新（Ctrl+F5）。之后改 `lib/client.js` 需要重新构建客户端 bundle；若 DSH checkout 正在运行 `pnpm run dev:web`，客户端 HMR 可在重载后生效。
 
 ## 打包下载
 
@@ -83,9 +88,9 @@ dsh plugin --profile web add D:/dsh/pixel-skin
 
 ```sh
 npm pack
-# 生成 dsh-pixel-skin-1.0.1.tgz
+# 生成 dsh-pixel-skin-2.0.0.tgz
 
-dsh plugin --profile web add ./dsh-pixel-skin-1.0.1.tgz
+dsh plugin --profile web add ./dsh-pixel-skin-2.0.0.tgz
 ```
 
 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
@@ -97,8 +102,10 @@ dsh plugin --profile web add ./dsh-pixel-skin-1.0.1.tgz
 ```js
 __PIXELSKIN__.palette('red') // 切换主题色：red / blue / green / yellow
 __PIXELSKIN__.palettes() // ['red','blue','green','yellow']
-__PIXELSKIN__.status('evolve') // 状态句：evolve / battle / move / charge
-__PIXELSKIN__.statuses() // ['evolve','battle','move','charge']
+__PIXELSKIN__.status('idle') // 状态句：idle / charge / move / evolve
+__PIXELSKIN__.statuses() // ['idle','charge','move','evolve']
+__PIXELSKIN__.effortPalette('blue') // 滑块配色：blue / green / ember
+__PIXELSKIN__.effortCustom('#f0a030') // 自定义滑块主色
 __PIXELSKIN__.scanlines(true) // 开启扫描线
 __PIXELSKIN__.scanlines(false) // 关闭扫描线
 __PIXELSKIN__.off() // 停用皮肤，刷新后恢复官方外观
@@ -111,6 +118,12 @@ __PIXELSKIN__.on() // 重新启用皮肤，刷新后生效
 pixel-skin:enabled = 0     # 整体停用
 pixel-skin:scanlines = 1   # 开启扫描线
 ```
+
+## 推理等级补全
+
+Host 注册 `/pixel-declare <provider>` 命令。它只修改没有 `reasoningEfforts` 的模型：优先读取 [models.dev](https://models.dev) 的唯一匹配，目录不可用时使用保守的模型家族推断；图像模型和无法判断的模型会跳过。可选的启动补全仍由 `cordis.patch.yml` 中的 `enrichFromModelsDev` 控制，默认关闭。
+
+点击模型菜单中的「推理等级」后，面板会读取当前模型公开的 `reasoning.efforts`，并通过 `session.selectModel` 写回当前会话。没有档位的模型则提供「补全图鉴」按钮。
 
 ## 卸载
 

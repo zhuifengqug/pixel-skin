@@ -1,15 +1,17 @@
 {
   "name": "dsh-pixel-skin",
-  "version": "1.0.1",
-  "description": "红白机（Famicom）像素风皮肤 for DeepSeek Harness Web：四色可切换强调色、像素字体、HP 条式状态与 GBA 式窗框。",
+  "version": "2.0.0",
+  "description": "DeepSeek Harness Web 的宝可梦风像素皮肤：能力等级面板、推理档位补全、四色主题、像素字体、HP 段与 GBA 窗框。",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "index.js",
   "exports": {
-    ".": "./lib/index.js",
+    ".": "./index.js",
     "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "files": [
+    "index.js",
     "lib",
     "assets",
     "cordis.patch.yml",
@@ -39,7 +41,10 @@
     },
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-ui-theme"
+        "@deepseek-ai/dsh-client-ui-theme",
+        "connection",
+        "sessions",
+        "remote"
       ],
       "platform": "web"
     }

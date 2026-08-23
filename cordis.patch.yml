@@ -1,5 +1,8 @@
 # dsh-pixel-skin — 红白机像素风皮肤（web profile）
-# 客户端插件行：包内 package.json 的 dsh.client 声明让它进入 window.__DSH_BOOT__ 图
+# Host + client rows for the merged skin and reasoning panel.
 - insert:
     - id: pixel-skin
       name: dsh-pixel-skin
+      config:
+        enrichFromModelsDev: false
+        cacheHours: 24
