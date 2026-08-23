@@ -1,4 +1,10 @@
-# dsh-pixel-skin · 红白机像素风皮肤
+# dsh-pixel-skin · Red-White Pixel Skin
+
+[中文文档](README.zh.md)
+
+A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfaces, cartridge red, charcoal text, square geometry, hard shadows, pixel fonts, grid texture, and stepped motion.
+
+> 中文用户请阅读：[README.zh.md](README.zh.md)
 
 给 DeepSeek Harness Web 换上 Famicom（红白机）配色的像素风皮肤：米白机壳 + 卡带红 + 炭黑，直角、硬阴影、像素字体、网格底、阶跃动画。
 
@@ -14,6 +20,33 @@
 - 与官方 Appearance（浅/深/跟随系统）兼容；与其他主题插件共存时**后加载层胜**（本插件默认最后加载 → 优先）
 
 ## 安装
+
+### npm 安装（发布后）
+
+发布到 npm 后，使用：
+
+```sh
+npm install dsh-pixel-skin
+
+dsh plugin --profile web add dsh-pixel-skin
+```
+
+也可以直接使用 pnpm：
+
+```sh
+pnpm add dsh-pixel-skin
+dsh plugin --profile web add dsh-pixel-skin
+```
+
+当前 npm registry 尚未发布此包；发布后无需修改上述命令。
+
+### GitHub 安装（当前可用）
+
+```sh
+dsh plugin --profile web add github:zhuifengqug/pixel-skin
+```
+
+### 本地安装
 
 ```sh
 dsh plugin --profile web add D:/dsh/pixel-skin
@@ -35,6 +68,19 @@ localStorage：
 
 - `pixel-skin:enabled` = `0` → 整体停用
 - `pixel-skin:scanlines` = `1` → 扫描线
+
+## 打包下载
+
+不发布 npm 时，也可以生成本地 tarball：
+
+```sh
+npm pack
+# 生成 dsh-pixel-skin-0.1.0.tgz
+
+dsh plugin --profile web add ./dsh-pixel-skin-0.1.0.tgz
+```
+
+GitHub 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
 
 ## 卸载
 
