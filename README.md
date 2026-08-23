@@ -105,9 +105,9 @@ localStorage：
 
 ```sh
 npm pack
-# 生成 dsh-pixel-skin-0.1.0.tgz
+# 生成 dsh-pixel-skin-1.0.0.tgz
 
-dsh plugin --profile web add ./dsh-pixel-skin-0.1.0.tgz
+dsh plugin --profile web add ./dsh-pixel-skin-1.0.0.tgz
 ```
 
 GitHub 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
