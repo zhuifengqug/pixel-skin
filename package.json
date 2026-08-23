@@ -1,6 +1,6 @@
 {
   "name": "dsh-pixel-skin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "红白机（Famicom）像素风皮肤 for DeepSeek Harness Web：四色可切换强调色、像素字体、HP 条式状态与 GBA 式窗框。",
   "type": "module",
   "main": "lib/index.js",
