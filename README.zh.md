@@ -18,22 +18,27 @@
 
 ## 安装
 
-### npm 安装
+### DSH Web 安装（推荐）
 
-包已发布到 npm，执行：
+只需要执行下面这一条命令。`dsh plugin` 会在 `web` profile 中完成包安装、登记和激活：
+
+```sh
+dsh plugin --profile web add dsh-pixel-skin
+```
+
+安装后重启 `dsh web`，然后在浏览器中硬刷新（Ctrl+F5）。
+
+### 作为普通 npm 依赖使用（可选）
+
+如果你想在其他 Node.js 项目中使用这个包，可以执行：
 
 ```sh
 npm install dsh-pixel-skin
-
-dsh plugin --profile web add dsh-pixel-skin
-```
-
-也可以使用 pnpm：
-
-```sh
+# 或
 pnpm add dsh-pixel-skin
-dsh plugin --profile web add dsh-pixel-skin
 ```
+
+这一步不会自动把插件加入 DSH Web profile；DSH 用户不需要先执行它。
 
 查看当前 npm 版本：
 
