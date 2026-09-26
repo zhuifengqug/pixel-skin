@@ -2,11 +2,11 @@
 
 [中文文档](README.zh.md)
 
-A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfaces, cartridge red, charcoal text, square geometry, hard shadows, pixel fonts, grid texture, and stepped motion.
+A Famicom-inspired pixel skin for the DeepSeek Harness GUI (Web browser + Electron desktop): warm white surfaces, cartridge red, charcoal text, square geometry, hard shadows, pixel fonts, grid texture, and stepped motion.
 
 > 中文用户请阅读：[README.zh.md](README.zh.md)
 
-给 DeepSeek Harness Web 换上 Famicom（红白机）配色的像素风皮肤：米白机壳 + 卡带红 + 炭黑，直角、硬阴影、像素字体、网格底、阶跃动画。
+给 DeepSeek Harness（Web 与 Electron 桌面端）换上 Famicom（红白机）配色的像素风皮肤：米白机壳 + 卡带红 + 炭黑，直角、硬阴影、像素字体、网格底、阶跃动画。
 
 ## 特性
 
@@ -28,6 +28,7 @@ A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfa
 - **推理等级拖动**：支持 0–100 拖动、16ms 节流写入 effort，松手或失焦时吸附到最近的模型档位。
 - **能力色谱**：单色系由浅到深渐深（single-hue, light to dark），最深档仍保持可见颜色；当前格显示白色顶边。
 - **自动补全图鉴**：无推理档位的模型会出现「补全图鉴」入口，调用 `/pixel-declare` 按 models.dev 和模型家族规则补全配置。
+- **桌面端适配（2.1.0 新增，2.1.1 修订）**：Windows 自绘标题栏拖拽带铺米色侧栏底 + 2px 墨线、内容区圆角归零；能力面板弹出避开 40px 标题栏拖拽带并按实际高度防溢出；全部旧 token 引用带真实 token / 字面量兜底（对齐 DSH 0.1.7 仅 14 个主题 token 的现实）；字体三级候选链。2.1.1 修复三处桌面端过宽匹配：GBA 窗框改按 WAI-ARIA 浮层角色匹配（不再命中主内容面板 / 顶栏菜单，消除对话页 L 形黑线）；侧栏行不再强制 padding（消除「插件」行图标文字重叠）；`_primary` 仅作用于按钮；能力面板对快照 `status` 缺失容错并在无滑块可渲染时自动归还官方菜单（附 MutationObserver 防抖补入口）。2.1.2：状态句匹配放宽（「深度求索中，用时…」等带后缀变体可替换且保留用时）；像素球重绘为直角分层球，替代 conic 渐变噪点。
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -43,15 +44,17 @@ A Famicom-inspired pixel skin for the DeepSeek Harness Web GUI: warm white surfa
 
 ## 安装
 
-### DSH Web 安装（推荐）
+### DSH 安装（推荐）
 
-只需执行下面一条命令。`dsh plugin` 会在 `web` profile 中安装、登记并激活这个插件：
+只需执行下面一条命令。`dsh plugin` 会在对应 profile 中安装、登记并激活这个插件：
 
 ```sh
 dsh plugin --profile web add dsh-pixel-skin
+# 桌面端：
+dsh plugin --profile desktop add dsh-pixel-skin
 ```
 
-安装后重启 `dsh web` 并硬刷新浏览器。
+桌面端安装后重启 DeepSeek Harness 桌面应用；Web 安装后重启 `dsh web` 并硬刷新浏览器。
 
 ### 作为普通 npm 依赖使用（可选）
 
@@ -112,9 +115,9 @@ localStorage：
 
 ```sh
 npm pack
-# 生成 dsh-pixel-skin-2.0.0.tgz
+# 生成 dsh-pixel-skin-2.1.2.tgz
 
-dsh plugin --profile web add ./dsh-pixel-skin-2.0.0.tgz
+dsh plugin --profile web add ./dsh-pixel-skin-2.1.2.tgz
 ```
 
 GitHub 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
@@ -135,5 +138,7 @@ dsh plugin --profile web remove dsh-pixel-skin
 
 - 侧栏/工具栏图标是 @iconify 矢量图标，本皮肤只改颜色、不改图标形状
 - Fusion Pixel 字体来自固定版本的字体资源；插件同时保留 `assets/fonts` 与 OFL-1.1 声明
-- 当前 client bundle 使用固定 commit 的远程字体 URL；加载失败会回退系统字体。`assets/fonts` 保留完整字体文件，便于后续构建离线 data URI 版
+- 字体三级候选链（`/plugins/dsh-pixel-skin/assets/fonts/*` → `./assets/fonts/*` → 固定 commit 远程 URL）；当前 `/plugins` 路由不服务插件 assets，本地候选多为 404，由远程兜底；加载失败回退系统字体
+- 桌面端 Windows 自绘标题栏样式基于 DSH 0.1.7-rc.2 的 `html[data-windows-titlebar]` 与 `.ZTP-Xa_*` 内部类名；官方调整时需同步
+- GBA 窗框按 WAI-ARIA 浮层角色（dialog / menu / listbox / alertdialog / tooltip）与 `_popup` / `_popover` / `_dropdown` 类名后缀匹配；不使用这些角色/后缀的第三方插件浮层保持原生外观
 - DSH 仍在 developer preview，token 集若变动需在 `lib/client.js` 的 `TOKENS` 里重新对齐

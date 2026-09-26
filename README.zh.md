@@ -2,7 +2,7 @@
 
 [English README](README.md)
 
-给 DeepSeek Harness Web GUI 换上红白机（Famicom）风格：米白机壳、卡带红、炭黑文字、墨蓝代码区、复古黄色交互态和掌机绿色成功态。
+给 DeepSeek Harness 换上红白机（Famicom）风格：米白机壳、卡带红、炭黑文字、墨蓝代码区、复古黄色交互态和掌机绿色成功态。Web（浏览器）与桌面端（Electron）均已适配。
 
 ## 特性
 
@@ -25,6 +25,13 @@
 - **推理等级拖动**：支持 0–100 拖动、16ms 节流写入 effort，松手或失焦时吸附到最近的模型档位。
 - **能力色谱**：单色系由浅到深渐深，最深档仍保持可见颜色；当前格显示白色顶边。
 - **自动补全图鉴**：无推理档位的模型会出现「补全图鉴」入口，调用 `/pixel-declare` 按 models.dev 和模型家族规则补全配置。
+- **桌面端适配（2.1.0 新增，2.1.1 修订）**：
+  - Windows 自绘标题栏（Electron `html[data-windows-titlebar]`）：拖拽带铺米色侧栏底 + 2px 墨线，内容区 16px 圆角归零为像素直角；桌面 preload 注入的顶栏自动继承像素字体
+  - 能力等级面板弹出位置自动避开 40px 标题栏拖拽带（读取 `--dsh-windows-titlebar-height`，Web 端自动为 0），弹出后按实际高度防底部溢出
+  - 对 DSH 0.1.7 仅暴露 14 个主题 token 的现实对齐：所有旧 token 引用均带真实 token / 字面量兜底，桌面端不再出现「变透明 / 无边框」样式落空
+  - 字体改为三级候选链：插件资源位 → 文档相对路径 → 固定 commit 远程兜底，加载失败自动降级
+  - 2.1.1 修复三处桌面端过宽匹配：GBA 窗框不再命中主内容面板 / 顶栏菜单（改为 WAI-ARIA 浮层角色 + `_popup` 后缀，消除对话页 L 形黑线与横向滚动条）；侧栏行不再强制 padding（消除「技能中心 → 插件」行图标与文字重叠）；`_primary` 仅作用于按钮（防止任意元素被整体涂色）；能力面板对桌面端快照 `status` 缺失/`loading` 容错，无滑块可渲染时自动把官方菜单还给用户，并以 MutationObserver 防抖自动补「补全图鉴」入口
+  - 2.1.2：回合状态句匹配放宽——桌面端实际文本「深度求索中，用时1小时07分21秒」等带后缀变体也能替换，且保留用时后缀；像素球重绘为直角分层球（上红下白 + 墨带 + 白纽 + 墨线描边），替代 conic 渐变小尺寸下的红白噪点
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -40,15 +47,17 @@
 
 ## 安装
 
-### DSH Web 安装（推荐）
+### DSH 安装（推荐）
 
-只需要执行下面这一条命令。`dsh plugin` 会在 `web` profile 中完成包安装、登记和激活：
+只需要执行下面这一条命令。`dsh plugin` 会在对应 profile 中完成包安装、登记和激活：
 
 ```sh
 dsh plugin --profile web add dsh-pixel-skin
+# 桌面端：
+dsh plugin --profile desktop add dsh-pixel-skin
 ```
 
-安装后重启 `dsh web`，然后在浏览器中硬刷新（Ctrl+F5）。
+桌面端安装后重启 DeepSeek Harness 桌面应用即可；Web 安装后重启 `dsh web`，然后在浏览器中硬刷新（Ctrl+F5）。
 
 ### 作为普通 npm 依赖使用（可选）
 
@@ -88,9 +97,9 @@ dsh plugin --profile web add D:/dsh/pixel-skin
 
 ```sh
 npm pack
-# 生成 dsh-pixel-skin-2.0.0.tgz
+# 生成 dsh-pixel-skin-2.1.2.tgz
 
-dsh plugin --profile web add ./dsh-pixel-skin-2.0.0.tgz
+dsh plugin --profile web add ./dsh-pixel-skin-2.1.2.tgz
 ```
 
 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
@@ -131,7 +140,7 @@ Host 注册 `/pixel-declare <provider>` 命令。它只修改没有 `reasoningEf
 dsh plugin --profile web remove dsh-pixel-skin
 ```
 
-卸载后重启 `dsh web` 并刷新页面即可恢复官方外观。
+卸载后重启 `dsh web`（桌面端重启应用）并刷新页面即可恢复官方外观。
 
 ## 字体与许可证
 
@@ -146,6 +155,8 @@ dsh plugin --profile web remove dsh-pixel-skin
 ## 已知边界
 
 - 侧栏和工具栏图标是矢量图标，本皮肤主要调整颜色和表面，不重绘图标形状
-- 当前 client bundle 使用固定 commit 的远程字体 URL，同时保留 `assets/fonts` 字体文件作为离线构建来源
+- 字体使用三级候选链（`/plugins/dsh-pixel-skin/assets/fonts/*` → `./assets/fonts/*` → 固定 commit 远程 URL）；当前 DSH 的 `/plugins` 路由不服务插件 assets，本地两级候选多数情况下 404，由远程兜底加载；`assets/fonts` 保留作为离线构建来源
 - 网络字体加载失败时会回退到系统中文字体，不影响 DSH 功能
+- 桌面端 Windows 自绘标题栏样式基于 DSH 0.1.7-rc.2 的 `html[data-windows-titlebar]` 与 `.ZTP-Xa_*` 内部类名，官方调整骨架类名或变量名时需要同步更新
+- GBA 窗框按 WAI-ARIA 浮层角色（dialog / menu / listbox / alertdialog / tooltip）与 `_popup` / `_popover` / `_dropdown` 类名后缀匹配；不使用这些角色/后缀的第三方插件浮层保持原生外观
 - DSH 仍处于 developer preview，官方 token 名称变化时需要更新 `lib/client.js` 中的 `TOKENS`
