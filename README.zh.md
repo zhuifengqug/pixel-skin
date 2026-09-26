@@ -20,19 +20,14 @@
 - **GBA 式对话窗**：弹窗 / 菜单 / 面板使用双层像素描边，选中项黄色高亮
 - **像素球加载动画**：圆形 spinner 替换为原创 8-bit 红白像素球（弹跳阶跃动画）
 - **回合状态句**：思考中的「Deep diving...」可独立替换为 待机… / 正在蓄力… / 正在出招… / 正在进化…（「像素皮肤」设置分区或控制台切换）
-- **滑块配色可选**：能力等级滑块支持蓝系 / 绿系 / 红橙三套由浅到深的单色渐变，也可用自定义取色器生成专属色带
-- **能力等级面板**：点击模型菜单中的「推理等级」打开 GBA 双描边窗框；使用 Fusion Pixel 字体、EXP 经验条、HP 段格子和像素箭头。
-- **推理等级拖动**：支持 0–100 拖动、16ms 节流写入 effort，松手或失焦时吸附到最近的模型档位。
-- **能力色谱**：单色系由浅到深渐深，最深档仍保持可见颜色；当前格显示白色顶边。
-- **自动补全图鉴**：无推理档位的模型会出现「补全图鉴」入口，调用 `/pixel-declare` 按 models.dev 和模型家族规则补全配置。
 - **桌面端适配（2.1.0 新增，2.1.1 修订）**：
   - Windows 自绘标题栏（Electron `html[data-windows-titlebar]`）：拖拽带铺米色侧栏底 + 2px 墨线，内容区 16px 圆角归零为像素直角；桌面 preload 注入的顶栏自动继承像素字体
-  - 能力等级面板弹出位置自动避开 40px 标题栏拖拽带（读取 `--dsh-windows-titlebar-height`，Web 端自动为 0），弹出后按实际高度防底部溢出
   - 对 DSH 0.1.7 仅暴露 14 个主题 token 的现实对齐：所有旧 token 引用均带真实 token / 字面量兜底，桌面端不再出现「变透明 / 无边框」样式落空
   - 字体改为三级候选链：插件资源位 → 文档相对路径 → 固定 commit 远程兜底，加载失败自动降级
-  - 2.1.1 修复三处桌面端过宽匹配：GBA 窗框不再命中主内容面板 / 顶栏菜单（改为 WAI-ARIA 浮层角色 + `_popup` 后缀，消除对话页 L 形黑线与横向滚动条）；侧栏行不再强制 padding（消除「技能中心 → 插件」行图标与文字重叠）；`_primary` 仅作用于按钮（防止任意元素被整体涂色）；能力面板对桌面端快照 `status` 缺失/`loading` 容错，无滑块可渲染时自动把官方菜单还给用户，并以 MutationObserver 防抖自动补「补全图鉴」入口
+  - 2.1.1 修复三处桌面端过宽匹配：GBA 窗框不再命中主内容面板 / 顶栏菜单（改为 WAI-ARIA 浮层角色 + `_popup` 后缀，消除对话页 L 形黑线与横向滚动条）；侧栏行不再强制 padding（消除「技能中心 → 插件」行图标与文字重叠）；`_primary` 仅作用于按钮（防止任意元素被整体涂色）
   - 2.1.2：回合状态句匹配放宽——桌面端实际文本「深度求索中，用时1小时07分21秒」等带后缀变体也能替换，且保留用时后缀；像素球重绘为直角分层球（上红下白 + 墨带 + 白纽 + 墨线描边），替代 conic 渐变小尺寸下的红白噪点
   - 2.1.3：状态句替换改为文本节点级（不再整元素 textContent 改写——那会清空 React 子节点被立即重建，表现为替换不生效）；候选选择器扩展到 `_turnStatus` / `_activity` / `_busy`；`__PIXELSKIN__.status()` 热切换改为节点级短语替换并新增 `version` 字段便于核对已加载的 bundle 版本
+  - 2.1.5：移除能力等级面板（自绘滑块）、滑块配色设置与 `/pixel-declare` 补全命令——受控滑块拖动时高频异步写入模型选择，与远端回写相互竞争，导致切换卡顿、需多次点击；推理等级切换回归官方模型菜单（模型档位由 cordis.patch.yml 对 llm-pi-ai providers 静态声明）
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -114,8 +109,6 @@ __PIXELSKIN__.palette('red') // 切换主题色：red / blue / green / yellow
 __PIXELSKIN__.palettes() // ['red','blue','green','yellow']
 __PIXELSKIN__.status('idle') // 状态句：idle / charge / move / evolve
 __PIXELSKIN__.statuses() // ['idle','charge','move','evolve']
-__PIXELSKIN__.effortPalette('blue') // 滑块配色：blue / green / ember
-__PIXELSKIN__.effortCustom('#f0a030') // 自定义滑块主色
 __PIXELSKIN__.scanlines(true) // 开启扫描线
 __PIXELSKIN__.scanlines(false) // 关闭扫描线
 __PIXELSKIN__.off() // 停用皮肤，刷新后恢复官方外观
@@ -128,12 +121,6 @@ __PIXELSKIN__.on() // 重新启用皮肤，刷新后生效
 pixel-skin:enabled = 0     # 整体停用
 pixel-skin:scanlines = 1   # 开启扫描线
 ```
-
-## 推理等级补全
-
-Host 注册 `/pixel-declare <provider>` 命令。它只修改没有 `reasoningEfforts` 的模型：优先读取 [models.dev](https://models.dev) 的唯一匹配，目录不可用时使用保守的模型家族推断；图像模型和无法判断的模型会跳过。可选的启动补全仍由 `cordis.patch.yml` 中的 `enrichFromModelsDev` 控制，默认关闭。
-
-点击模型菜单中的「推理等级」后，面板会读取当前模型公开的 `reasoning.efforts`，并通过 `session.selectModel` 写回当前会话。没有档位的模型则提供「补全图鉴」按钮。
 
 ## 卸载
 

@@ -1,7 +1,7 @@
 {
   "name": "dsh-pixel-skin",
-  "version": "2.1.4",
-  "description": "DeepSeek Harness 的宝可梦风像素皮肤：能力等级面板、推理档位补全、四色主题、像素字体、HP 段与 GBA 窗框；桌面端（Electron/Windows 自绘标题栏）适配。",
+  "version": "2.1.5",
+  "description": "DeepSeek Harness 的宝可梦风像素皮肤：四色主题、像素字体、HP 段与 GBA 窗框、回合状态句替换；桌面端（Electron/Windows 自绘标题栏）适配。",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -41,10 +41,7 @@
     },
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-ui-theme",
-        "@deepseek-ai/dsh-client-ui-model-selection",
-        "sessions",
-        "remote"
+        "@deepseek-ai/dsh-client-ui-theme"
       ],
       "platform": "web"
     }

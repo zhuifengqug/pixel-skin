@@ -23,12 +23,7 @@ A Famicom-inspired pixel skin for the DeepSeek Harness GUI (Web browser + Electr
 - **GBA 式对话窗**：弹窗 / 菜单 / 面板使用双层像素描边，选中项黄色高亮
 - **像素球加载动画**：圆形 spinner 替换为原创 8-bit 红白像素球（弹跳阶跃动画）
 - **回合状态句**：思考中的「Deep diving...」可独立替换为 待机… / 正在蓄力… / 正在出招… / 正在进化…（Pixel skin 设置分区或控制台切换）
-- **滑块配色可选**：能力等级滑块支持蓝系 / 绿系 / 红橙三套由浅到深的单色渐变，也可用自定义取色器生成专属色带
-- **能力等级面板**：点击模型菜单中的「推理等级」打开 GBA 双描边窗框；使用 Fusion Pixel 字体、EXP 经验条、HP 段格子和像素箭头。
-- **推理等级拖动**：支持 0–100 拖动、16ms 节流写入 effort，松手或失焦时吸附到最近的模型档位。
-- **能力色谱**：单色系由浅到深渐深（single-hue, light to dark），最深档仍保持可见颜色；当前格显示白色顶边。
-- **自动补全图鉴**：无推理档位的模型会出现「补全图鉴」入口，调用 `/pixel-declare` 按 models.dev 和模型家族规则补全配置。
-- **桌面端适配（2.1.0 新增，2.1.1 修订）**：Windows 自绘标题栏拖拽带铺米色侧栏底 + 2px 墨线、内容区圆角归零；能力面板弹出避开 40px 标题栏拖拽带并按实际高度防溢出；全部旧 token 引用带真实 token / 字面量兜底（对齐 DSH 0.1.7 仅 14 个主题 token 的现实）；字体三级候选链。2.1.1 修复三处桌面端过宽匹配：GBA 窗框改按 WAI-ARIA 浮层角色匹配（不再命中主内容面板 / 顶栏菜单，消除对话页 L 形黑线）；侧栏行不再强制 padding（消除「插件」行图标文字重叠）；`_primary` 仅作用于按钮；能力面板对快照 `status` 缺失容错并在无滑块可渲染时自动归还官方菜单（附 MutationObserver 防抖补入口）。2.1.2：状态句匹配放宽（「深度求索中，用时…」等带后缀变体可替换且保留用时）；像素球重绘为直角分层球，替代 conic 渐变噪点。2.1.3：状态句替换改为文本节点级 + 候选扩展 `_turnStatus`/`_activity`/`_busy`；`__PIXELSKIN__` 新增 `version` 字段。
+- **桌面端适配（2.1.0 新增，2.1.1 修订）**：Windows 自绘标题栏拖拽带铺米色侧栏底 + 2px 墨线、内容区圆角归零；全部旧 token 引用带真实 token / 字面量兜底（对齐 DSH 0.1.7 仅 14 个主题 token 的现实）；字体三级候选链。2.1.1 修复三处桌面端过宽匹配：GBA 窗框改按 WAI-ARIA 浮层角色匹配（不再命中主内容面板 / 顶栏菜单，消除对话页 L 形黑线）；侧栏行不再强制 padding（消除「插件」行图标文字重叠）；`_primary` 仅作用于按钮。2.1.2：状态句匹配放宽（「深度求索中，用时…」等带后缀变体可替换且保留用时）；像素球重绘为直角分层球，替代 conic 渐变噪点。2.1.3：状态句替换改为文本节点级 + 候选扩展 `_turnStatus`/`_activity`/`_busy`；`__PIXELSKIN__` 新增 `version` 字段。2.1.5：移除能力等级面板（自绘滑块）、滑块配色设置与 `/pixel-declare` 补全命令——拖动时的高频异步写入与远端回写相互竞争，导致切换卡顿、需多次点击；推理等级切换回归官方模型菜单（档位由 cordis.patch.yml 静态声明）。
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -97,8 +92,6 @@ __PIXELSKIN__.palette('red')      // 切换主题色：red / blue / green / yell
 __PIXELSKIN__.palettes()          // ['red','blue','green','yellow']
 __PIXELSKIN__.status('idle')      // 状态句：idle / charge / move / evolve
 __PIXELSKIN__.statuses()            // ['idle','charge','move','evolve']
-__PIXELSKIN__.effortPalette('blue') // 滑块配色：blue / green / ember
-__PIXELSKIN__.effortCustom('#f0a030') // 自定义滑块主色
 __PIXELSKIN__.scanlines(true)     // 开启扫描线（false 关闭）
 __PIXELSKIN__.off()               // 停用皮肤（刷新后恢复官方外观）
 __PIXELSKIN__.on()                // 重新启用
@@ -121,12 +114,6 @@ dsh plugin --profile web add ./dsh-pixel-skin-2.1.2.tgz
 ```
 
 GitHub 仓库地址：<https://github.com/zhuifengqug/pixel-skin>
-
-## Reasoning Panel
-
-The Host registers `/pixel-declare <provider>`. It only updates models without `reasoningEfforts`, preferring a unique [models.dev](https://models.dev) match and falling back to conservative model-family inference when the catalog is unavailable. Image models and unknown families are skipped. Optional startup enrichment remains controlled by `enrichFromModelsDev` in `cordis.patch.yml` and is disabled by default.
-
-Click **Reasoning effort** in the model menu to open the panel. It reads the current model's published `reasoning.efforts` and writes the selected value through `session.selectModel`. Models without efforts show a **Fill Pokédex** action instead.
 
 ## 卸载
 
