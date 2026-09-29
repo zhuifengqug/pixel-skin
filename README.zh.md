@@ -154,6 +154,67 @@ dsh plugin --profile web remove dsh-pixel-skin
 
 字体版权归 TakWolf 所有，字体部分使用 SIL Open Font License 1.1。完整许可证见 [`assets/fonts/LICENSE.fusion-pixel.txt`](assets/fonts/LICENSE.fusion-pixel.txt)，第三方声明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
+## 权限、依赖与失败边界
+
+面向安装前审查，逐项如实声明。**不声明「未发现」为「不访问」**。
+
+### 权限
+
+| 类别 | 是否触及 | 说明 |
+|---|---|---|
+| 文件系统 | 否 | 插件不读写任何磁盘路径。`index.js` / `lib/index.js` 是 no-op 占位，Node 启动零副作用 |
+| 命令 / Shell / 子进程 | 否 | 无 `child_process`、无动态执行 |
+| 凭据 / Token / Cookie | 否 | 不读取、不存储、不转发任何凭据 |
+| 原生制品 | 否 | 纯 JS + CSS + WOFF2 字体，无 `.node` / 二进制可执行物 |
+| 受保护 DSH 行为 | 否 | 不禁用、不替换、不重复安装任何 `@deepseek-ai/*` 官方组件 |
+| 持久状态 | **是** | 浏览器 `localStorage`，仅插件私有偏好键（见下），不触碰 Profile / 会话文件 |
+| 网络 | **是** | 仅 `@font-face` 取字体，指向**本仓库 origin 的固定 commit**，见下 |
+
+`localStorage` 键（全部为皮肤私有偏好，删除即回到默认值）：
+
+```
+pixel-skin:enabled          开关
+pixel-skin:scanlines        CRT 扫描线
+pixel-skin:palette          主题色
+pixel-skin:accent           自定义强调色（2.2.0）
+pixel-skin:scale            像素缩放档位（2.2.0）
+pixel-skin:status           回合状态句
+pixel-skin:effort-palette   能力色谱（2.3.0）
+pixel-skin:effort-custom    自定义色带基色（2.3.0）
+```
+
+**权限等级自评：`medium`。** 依据 DSH STORE 口径——「仅有范围明确的只读、插件私有状态写入、
+指定服务时可标为 medium」：本插件只有插件私有状态写入 + 指定单一服务，不触碰 Profile / 会话
+持久状态，不访问任意网络，不承担插件生命周期管理。最终等级由商城判定，此处只是自评与依据。
+
+### 外部服务
+
+| 服务 | 用途 | 固定方式 | 失败时 |
+|---|---|---|---|
+| `raw.githubusercontent.com/zhuifengqug/pixel-skin/<commit>/assets/fonts/*.woff2` | 像素字体三级候选链的远程兜底 | 钉死 commit SHA，非浮动分支 | 回退系统中文字体 |
+
+**没有其他外部服务**：无遥测、无统计、无更新检查、无第三方 API。
+
+### 运行依赖
+
+- peer：`@deepseek-ai/dsh`、`@deepseek-ai/cordis`
+- 宿主运行时提供：`react`（由 DSH ModuleLoader 注入，插件不自带）
+- **不使用 `react-dom`**：面板用原生 DOM 构建，因为 ModuleLoader 未注册 `react-dom/client`
+- 无 `dependencies`，无 `preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本；
+  `scripts.build` 是 `echo` 空操作，安装时不会执行
+
+### 失败边界
+
+| 故障 | 表现 | 是否影响 DSH 功能 |
+|---|---|---|
+| 字体三级候选链全部 404 | 降级为系统中文字体 | 否 |
+| 官方 DOM 类名哈希改名 | 对应装饰（标题栏 / 状态胶囊）不再生效 | 否 |
+| `ctx.modelDirectories` 不可用 | 推理等级面板不安装；设置页色谱仍可用 | 否 |
+| `localStorage` 被禁用 | 每次刷新回到默认值 | 否 |
+| 推理等级写入失败 | 面板内红字提示，不重试、不回滚官方状态 | 否 |
+
+**皮肤的定位是纯装饰**：任何一处失效都只影响外观，不会改变 DSH 的行为、数据或权限。
+
 ## 已知边界
 
 - 侧栏和工具栏图标是矢量图标，本皮肤主要调整颜色和表面，不重绘图标形状
