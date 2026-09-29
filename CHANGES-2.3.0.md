@@ -82,83 +82,71 @@ npm `dist-tags` 实测：`latest = 0.1.7-rc.2`，`alpha = 0.1.7-alpha.2`，`next
 > 商店原文：「高权限项目可能仍需保持 `user-reviewed`/`blocked`，声明本身不保证自动批准」。
 > 5、6 两项属于皮肤固有能力，预期不会拿到自动 `source-verified`，属正常结果，不是整改失败。
 
-## 3. 推理等级像素面板（2.1.4 能力回归 + 新规格）
+## 3. 推理等级像素面板（滑块）—— **本轮搁置，未随 2.3.0 发布**
 
-2.1.5（`ed2d807`）删除了 593 行 effort panel。本次按新规格恢复。
+> 用户决定：**「滑块不做了，之后再做」。** 因此开发期的实现（面板 CSS、色谱、菜单拦截、
+> 设置卡片、console API、`modelDirectories` 接线）在**发版前**整体摘除 577 行，
+> 2.3.0 只保留第 1、2 两节的修复。
+> 代码完整留在 git 历史：`1e59a14..d2170f8`。
 
-### 3.1 契约实测（0.1.7-rc.2）
+摘除的直接理由是：这个面板在 2.3.0 里**开不起来**，而设置页却写着「在模型菜单里点
+『推理等级』打开 GBA 窗框面板」——那是**假说明**。发一个 UI 声称存在、实际点不进去的功能，
+比不发更糟。另外菜单侧的拦截器当时是「取不到 sessionId 就什么都不拦」的安全写法，
+所以官方子菜单照常可用，摘除动作不会让任何东西比现在更坏。
 
-`ctx.modelDirectories`（`ModelDirectoryResolver`）**仍然存在**，位于
-`@deepseek-ai/dsh-client-ui-model-selection`：
+### 3.1 已确认的技术事实（下次接着做时直接可用，别再重走）
 
-- `directoryFor(sessionId)` → directory（未知 session 抛错）；
-- `directory.store.subscribe(fn)` / `directory.load()` → snapshot；
-- snapshot：`{ status, current: {provider, model, reasoningEffort?}, groups: [{id, models: [...]}], pending }`；
-- `directory.select({ provider, model, reasoningEffort })` → Promise（`async select` 仍在）。
+这两条是这一轮真正换来的东西，均已**实测**，不是推测：
 
-**关键差异**：推理档位不是 0–100 数值，而是**离散命名档位**：
+**① `SessionListState` 没有 `current` / `sessionId` 字段。**
 
 ```ts
-model.reasoning = {
-  defaultEffort?: string,
-  efforts: Array<{ id: string, name: string }>,
+// @deepseek-ai/dsh-api-session-controller/lib/types/client/sessions/service.d.ts
+export interface SessionListState {
+  ids: SessionId[];
+  byId: Record<SessionId, SessionSummary>;
+  phase: SessionListPhase;
+  projectionsBySession: ...;
 }
 ```
 
-DeepSeek 线路实测为 `off | low | high | max`（`dsh-llm-deepseek` 的 `ReasoningEffortId`）。
+因此 `sessions.list.getSnapshot().current` **恒为 `undefined`** —— 这就是「点了没反应」的
+直接成因（我先 `preventDefault()` 再判断，把官方子菜单吃掉了）。`ISessions` 的契约注释也写明
+`navigation belongs to view owners`：**sessions 服务不负责「当前会话是哪个」**。
 
-### 3.2 与新规格的映射
+正确的三个来源，按可靠性排序：
 
-| 规格 | 实现 |
+1. **slot 的 `sessionId` 入参** —— 官方 `conversation.input.model` 注册处就是
+   `inject: (sessionId) => { const directory = models.directoryFor(sessionId); ... }`；
+2. **DOM 上的 `data-conversation-session` 属性** —— 官方自己也这么用：
+   `const occurrence = target.closest("[data-conversation-session]");`
+   `const sessionId = occurrence.dataset.conversationSession;`
+3. `ctx.sessions.list.getSnapshot().ids` 只有目录列表，**不能用来判断当前会话**。
+
+**② 官方模型菜单是 `createPortal` 挂出去的，`element.closest()` 从菜单项上爬不回会话容器。**
+
+`ModelSelect` 用 `react_dom.createPortal(<MenuSurface role="menu" id={useId()}-menu .../>)`，
+且该 `id` 来自 `react.useId()`，**与 sessionId 无关**，不能反推。
+所以拦截菜单项时不能指望 `closest("[data-conversation-session]")` —— 必须在**打开菜单的那次
+点击（落在会话树内的 trigger 上）**就先把 sessionId 记下来。
+
+### 3.2 已验证可用的实现资产（重做时可直接复用）
+
+| 资产 | 状态 |
 |---|---|
-| 0–100 拖动 | `<input type=range min=0 max=100>`，纯本地视觉 |
-| 吸附最近模型档位 | `step = 100/(N-1)`，`index = Math.round(value/step)` → `efforts[index].id` |
-| 松手/失焦才写一次 | `pointerup` / `change` / `blur` 触发唯一一次 `select()`；拖动期间零写入 |
-| GBA 双描边窗框 | `box-shadow: 0 0 0 2px <inner>, 0 0 0 4px <outer>` |
-| EXP 经验条 / HP 段格子 | `.pixel-effort-cells` + `.pixel-effort-cell.is-filled` |
-| 像素箭头 | `.pixel-effort-arrow` + `steps(2)` 弹跳 |
-| 能力色谱 单色由浅到深 | 每格取色带对应 stop；最深档 `#2a4678` 级，仍可辨识非黑 |
-| 当前格白色顶边 | `.pixel-effort-cell.is-current { border-top: 2px solid #fffdf8 }` |
-| 蓝/绿/红橙三套 + 自定义 | `EFFORT_PALETTES` 三套固定 stop + `customStops(hex)` 生成 |
+| `directory.select({provider, model, reasoningEffort})` → 解析 `{ok, error}`（**不是 reject**） | 已确认，官方调用方是 `if (!r.ok) throw r.error` |
+| `model.reasoning = { defaultEffort?, efforts: [{id, name}] }`，**离散命名档位**非 0–100 | 已确认，DeepSeek 线路为 `off\|low\|high\|max` |
+| `ctx.modelDirectories.directoryFor(sessionId)` + `.store.subscribe()` + `.load()` | 服务仍在 `dsh-client-ui-model-selection` |
+| ModuleLoader **只注册 `react`，没有 `react-dom/client`** → 面板须用原生 DOM 构建 | 已确认 |
+| GBA 双描边 `box-shadow: 0 0 0 2px <inner>, 0 0 0 4px <outer>`、HP 段格、像素箭头、`steps(2)` 弹跳 | CSS 已写过并 `node --check` 通过，见 `1e59a14` |
+| 蓝 / 绿 / 红橙三套单色由浅到深 stop + `customStops(hex)` 由取色器生成色带 | 同上 |
+| 「松手/失焦才写一次」写入策略（相对 2.1.5 每 16ms 一次） | 已设计，未实测 |
+| 行匹配正则 `/^(推理等级\|Reasoning effort\|Effort(?![A-Za-z]))/` | 已跑过 7 条命中/拒绝用例 |
 
-### 3.3 为什么这次不会再卡
+### 3.3 这一轮的方法教训
 
-2.1.5 删除它的原因是自绘滑块**高频异步写入 `effort` 与远端写回互相抢**，拖动卡顿。
-新规格的「松手/失焦才写一次」把写入频次从每 16ms 一次降到每次拖拽一次，
-竞态窗口从「持续存在」变为「仅提交瞬间」。这是本轮唯一的写入策略（经确认）。
+面板连续三次返工（重复入口 → 点不动 → 完全没反应），**每一次都是在零浏览器验证的情况下
+直接提交的**。`node --check` 只证明语法，对 DOM 时序和宿主契约毫无说服力。
 
-**未验证项**：面板的实际视觉效果、拖动手感、以及写入后远端回填是否与本地一致，
-均需浏览器实测。`node --check` 通过不代表运行时正确。
-
-### 3.4 首版回归（用户截图发现）与修复
-
-首版把「推理等级」入口**注入**进模型菜单，一次引入三个 bug：
-
-| 症状 | 成因 |
-|---|---|
-| 与原来的「推理等级 high >」并列重复 | 官方模型菜单**本来就有**这一行；首版又 append 了一个同名入口 |
-| 点击没反应 | 注入的裸 `<button>` 落在 **React 托管**的菜单 DOM 里，React 重渲染即失效；`stopPropagation` 也拦不住 React 合成事件 |
-| 莫名其妙出现在别的菜单 | 选择器 `[role="menu"], [data-radix-menu-content], [class*="_menu"]` 命中**全应用**各种菜单（右键菜单、侧栏、下拉） |
-| 没有滑块 | 面板压根没打开（上一条），自然没有滑块 |
-
-**修法：不注入任何 DOM**，改为在捕获阶段拦截官方那一行的点击，`preventDefault` +
-`stopPropagation` + `stopImmediatePropagation` 后打开自己的 GBA 面板。
-
-理由是 owner 判断：官方那一行是 React 渲染的**稳定契约**，比「往别人的树里塞节点」
-可靠得多。2.1.4 的 `EFFORT_LABELS` 检查本来就是为了识别这一行，首版把它弄丢了。
-
-行匹配用一条正则，英文 `Effort` 带负向断言防止劫持 `Effortless…` 之类无关项：
-
-```js
-/^(推理等级|Reasoning effort|Effort(?![A-Za-z]))/
-```
-
-实测命中：`推理等级high >` ✓ `Reasoning effort high` ✓ `Effort` ✓；
-正确拒绝：`Effortless mode` ✗ `模型 Space Bunny Alpha (CC) >` ✗ `已思考 · 3 次工具调用` ✗。
-
-顺带两处加固：
-
-1. `effortModelOf` 先按 provider 精确匹配，不中再退回全组找同名 model —— 否则
-   provider 分组 id 与 `current.provider` 不同源时面板会是空的（又一个「没有滑块」来源）；
-2. 面板挂载后 250ms 内忽略「点外面」判定 —— 打开面板的那次点击仍在事件派发途中，
-   否则会被当成点外面立刻关掉。
+下次重做时的硬性前置：先写一个**最小探针**——点击时只 `console.log` 命中的行、解析到的
+`sessionId`、以及 `directoryFor()` 是否成功——**确认三条契约都对了，再往上盖 UI**。

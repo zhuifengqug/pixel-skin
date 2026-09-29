@@ -37,6 +37,10 @@
     - **修复：字体候选链不再依赖第三方仓库。** 此前最后一级兜底指向 `ADAning/dsh-pixel-skin` 的固定 commit（与本仓库 origin `zhuifengqug/pixel-skin` 不是同一个仓库，文件内容也与本地 `assets/fonts` 不一致），现改指本仓库 origin 的固定 commit
     - **修复：桌面端标题栏适配静默失效。** DSH 0.1.7-rc.2 的布局类名哈希已由 `ZTP-Xa` 变为 `pI_x6G`，2.1.5 写死的旧哈希已不命中；现同时匹配两代哈希，并在代码中标注该依赖的脆弱性
     - 新增 localStorage 键为**纯附加**（`pixel-skin:accent`、`pixel-skin:scale`），既有的 `pixel-skin:enabled` / `pixel-skin:scanlines` / `pixel-skin:palette` 值域未改动，旧值直接可用
+  - **2.3.0：修复回合状态句静默失效 + DSH STORE 上架整改（无 BREAKING，纯增量修复）**
+    - **修复：回合状态句替换一直不生效。** 根因不是措辞，而是替换对象——0.1.7-rc.2 的可见状态文案在 `button[data-turn-process]` 的 label span 里；`[role="status"]` 只命中 `visuallyHidden` 的 aria-live 播报节点（`clip:rect(0 0 0 0)`、1×1px，肉眼不可见），而 `_turnStatus` / `_activity` / `_busy` 三族类名在当前客户端包内根本不存在。替换每次都在成功执行，只是写进了看不见的节点。现主锚点改为稳定的 `data` 属性 `button[data-turn-process]`，旧类名分支保留兼容；CSS 同源修复（状态胶囊 + 像素光标）
+    - **DSH STORE 上架整改（issue #1199）**：补 `repository` / `homepage` / `bugs` / `LICENSE` / `engines` / `dsh.compatibility.dshReleases`；权限、外部服务与失败边界在 README「权限、依赖与失败边界」一节如实声明
+    - **能力等级面板（滑块）本轮搁置，未随 2.3.0 发布**——按「之后再做」处理，开发期实现已在发版前整体摘除 577 行，代码留在 git 历史（`1e59a14..d2170f8`），避免发布一个打不开的面板和设置页里一句误导说明
 
 > 像素球、HP 条与窗框均为原创 8-bit 图形，灵感来自 90 年代掌机游戏界面；未使用任天堂 / Pokémon 官方素材或商标名称。
 
@@ -179,8 +183,6 @@ pixel-skin:palette          主题色
 pixel-skin:accent           自定义强调色（2.2.0）
 pixel-skin:scale            像素缩放档位（2.2.0）
 pixel-skin:status           回合状态句
-pixel-skin:effort-palette   能力色谱（2.3.0）
-pixel-skin:effort-custom    自定义色带基色（2.3.0）
 ```
 
 **权限等级自评：`medium`。** 依据 DSH STORE 口径——「仅有范围明确的只读、插件私有状态写入、
@@ -209,9 +211,7 @@ pixel-skin:effort-custom    自定义色带基色（2.3.0）
 |---|---|---|
 | 字体三级候选链全部 404 | 降级为系统中文字体 | 否 |
 | 官方 DOM 类名哈希改名 | 对应装饰（标题栏 / 状态胶囊）不再生效 | 否 |
-| `ctx.modelDirectories` 不可用 | 推理等级面板不安装；设置页色谱仍可用 | 否 |
 | `localStorage` 被禁用 | 每次刷新回到默认值 | 否 |
-| 推理等级写入失败 | 面板内红字提示，不重试、不回滚官方状态 | 否 |
 
 **皮肤的定位是纯装饰**：任何一处失效都只影响外观，不会改变 DSH 的行为、数据或权限。
 

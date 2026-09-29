@@ -1,7 +1,7 @@
 {
   "name": "dsh-pixel-skin",
   "version": "2.3.0",
-  "description": "DeepSeek Harness 的宝可梦风像素皮肤：8 色主题 + 自定义强调色、像素字体与缩放、HP 段与 GBA 窗框、回合状态句替换、推理等级像素面板；桌面端（Electron/Windows 自绘标题栏）适配。",
+  "description": "DeepSeek Harness 的宝可梦风像素皮肤：8 色主题 + 自定义强调色、像素字体与缩放、HP 段与 GBA 窗框、回合状态句替换；桌面端（Electron/Windows 自绘标题栏）适配。",
   "type": "module",
   "main": "index.js",
   "exports": {
