@@ -129,3 +129,36 @@ DeepSeek 线路实测为 `off | low | high | max`（`dsh-llm-deepseek` 的 `Reas
 
 **未验证项**：面板的实际视觉效果、拖动手感、以及写入后远端回填是否与本地一致，
 均需浏览器实测。`node --check` 通过不代表运行时正确。
+
+### 3.4 首版回归（用户截图发现）与修复
+
+首版把「推理等级」入口**注入**进模型菜单，一次引入三个 bug：
+
+| 症状 | 成因 |
+|---|---|
+| 与原来的「推理等级 high >」并列重复 | 官方模型菜单**本来就有**这一行；首版又 append 了一个同名入口 |
+| 点击没反应 | 注入的裸 `<button>` 落在 **React 托管**的菜单 DOM 里，React 重渲染即失效；`stopPropagation` 也拦不住 React 合成事件 |
+| 莫名其妙出现在别的菜单 | 选择器 `[role="menu"], [data-radix-menu-content], [class*="_menu"]` 命中**全应用**各种菜单（右键菜单、侧栏、下拉） |
+| 没有滑块 | 面板压根没打开（上一条），自然没有滑块 |
+
+**修法：不注入任何 DOM**，改为在捕获阶段拦截官方那一行的点击，`preventDefault` +
+`stopPropagation` + `stopImmediatePropagation` 后打开自己的 GBA 面板。
+
+理由是 owner 判断：官方那一行是 React 渲染的**稳定契约**，比「往别人的树里塞节点」
+可靠得多。2.1.4 的 `EFFORT_LABELS` 检查本来就是为了识别这一行，首版把它弄丢了。
+
+行匹配用一条正则，英文 `Effort` 带负向断言防止劫持 `Effortless…` 之类无关项：
+
+```js
+/^(推理等级|Reasoning effort|Effort(?![A-Za-z]))/
+```
+
+实测命中：`推理等级high >` ✓ `Reasoning effort high` ✓ `Effort` ✓；
+正确拒绝：`Effortless mode` ✗ `模型 Space Bunny Alpha (CC) >` ✗ `已思考 · 3 次工具调用` ✗。
+
+顺带两处加固：
+
+1. `effortModelOf` 先按 provider 精确匹配，不中再退回全组找同名 model —— 否则
+   provider 分组 id 与 `current.provider` 不同源时面板会是空的（又一个「没有滑块」来源）；
+2. 面板挂载后 250ms 内忽略「点外面」判定 —— 打开面板的那次点击仍在事件派发途中，
+   否则会被当成点外面立刻关掉。
